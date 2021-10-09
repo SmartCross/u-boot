@@ -26,7 +26,6 @@
 
 #include <gzip.h>
 #include <image.h>
-#include <lz4.h>
 #include <mapmem.h>
 
 #if IMAGE_ENABLE_FIT || IMAGE_ENABLE_OF_LIBFDT
@@ -72,6 +71,7 @@ static const image_header_t *image_get_ramdisk(ulong rd_addr, uint8_t arch,
 #endif /* !USE_HOSTCC*/
 
 #include <u-boot/crc.h>
+#include <u-boot/lz4.h>
 #include <imximage.h>
 
 #ifndef CONFIG_SYS_BARGSIZE

@@ -18,7 +18,7 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/setup.h>
 #include <env.h>
-#include <lz4.h>
+#include <u-boot/lz4.h>
 #include <linux/delay.h>
 #include "../lib/avb/fsl/utils.h"
 
