@@ -1,0 +1,4 @@
+i.MX8MM EVK BOARD
+F:	board/freescale/imx8mm_smartcross/
+F:	include/configs/imx8mm_smartcross.h
+F:	configs/imx8mm_smartcross_defconfig
