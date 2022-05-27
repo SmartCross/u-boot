@@ -69,6 +69,12 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
+	// Set GPR_SAI1_SEL1 to SAI1.MCLK (enable MCLK input)
+	__raw_writel(0x20, 0x30340018); 
+
+	// Set GPR_SAI1_EXT_MCLK_EN to 1 (MCLK input from IO pad) 
+	// took me 1 day to find this register (because no register description in reference manual...)
+	__raw_writel(0x1, 0x30340008);
 	return 0;
 }
 
