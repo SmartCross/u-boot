@@ -20,6 +20,7 @@ endif
 
 ifdef CONFIG_$(SPL_)DM_I2C
 ifndef CONFIG_SPL_BUILD
+obj-$(CONFIG_SMARTCROSS_FPCTL) += smartcross_fpctl.o
 obj-$(CONFIG_SANDBOX) += i2c_eeprom_emul.o
 endif
 endif

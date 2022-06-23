@@ -508,4 +508,11 @@ config ESM_PMIC
 	  Support ESM (Error Signal Monitor) on PMIC devices. ESM is used
 	  typically to reboot the board in error condition.
 
+config SMARTCROSS_FPCTL
+	bool "Enable SmartCross Front Panel Controller driver"
+	depends on DM_I2C
+	depends on MISC
+	help
+	  Support reading device id from FPCTL
+
 endmenu
