@@ -53,7 +53,6 @@
 #define BOOTENV
 #endif
 
-
 #define CONFIG_MFG_ENV_SETTINGS \
 	CONFIG_MFG_ENV_SETTINGS_DEFAULT \
 	"initrd_addr=0x43800000\0" \
@@ -61,72 +60,40 @@
 	"emmc_dev=2\0"\
 	"sd_dev=1\0" \
 
-/* Initial environment variables */
-#if defined(CONFIG_NAND_BOOT)
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	CONFIG_MFG_ENV_SETTINGS \
-	"splashimage=0x50000000\0" \
-	"fdt_addr_r=0x43000000\0"			\
-	"fdt_addr=0x43000000\0"			\
-	"fdt_high=0xffffffffffffffff\0" \
-	"mtdparts=" MFG_NAND_PARTITION "\0" \
-	"console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200\0" \
-	"bootargs=console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 ubi.mtd=nandrootfs "  \
-		"root=ubi0:nandrootfs rootfstype=ubifs "		     \
-		MFG_NAND_PARTITION \
-		"\0" \
-	"bootcmd=nand read ${loadaddr} 0x5000000 0x2000000;"\
-		"nand read ${fdt_addr_r} 0x7000000 0x100000;"\
-		"booti ${loadaddr} - ${fdt_addr_r}"
-
-#else
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	CONFIG_MFG_ENV_SETTINGS \
 	BOOTENV \
-	"scriptaddr=0x43500000\0" \
 	"kernel_addr_r=" __stringify(CONFIG_LOADADDR) "\0" \
-	"bsp_script=boot.scr\0" \
-	"image=Image\0" \
-	"splashimage=0x50000000\0" \
 	"console=ttymxc1,115200\0" \
 	"fdt_addr_r=0x43000000\0"			\
 	"fdt_addr=0x43000000\0"			\
 	"fdt_high=0xffffffffffffffff\0"		\
 	"boot_fit=no\0" \
-	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
-	"bootm_size=0x10000000\0" \
-	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootwait ro\0" \
-	"mmcautodetect=yes\0" \
-	"mmcargs=smartcross_sysid; setenv bootargs ${machineid_arg} console=${console} root=${mmcroot}\0 " \
-	"loadbootscript=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bsp_script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr_r} ${fdtfile}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"if test ${boot_fit} = yes || test ${boot_fit} = try; then " \
-			"bootm ${loadaddr}; " \
-		"else " \
-			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr_r}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
-			"fi; " \
-		"fi;\0" \
-	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
-		"mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "fi;"
-#endif
+	"upgrade_available=0\0" \
+	"active_slot=a\0" \
+	"bsp_bootcmd="\
+	"setenv mmc_num 2\n"                                                                                        \
+	"setenv part_name rootfs-${active_slot}\n"                                                                  \
+	"part number mmc ${mmc_num} ${part_name} uboot_part\n"                                               \
+	"echo \"Booting from slot ${active_slot} (part ${uboot_part}) attempt ${bootcount}/${bootlimit}...\";\n"    \
+	"load mmc ${mmc_num}:${uboot_part} ${kernel_addr_r} /boot/Image;\n"                                         \
+	"load mmc ${mmc_num}:${uboot_part} ${fdt_addr} /boot/imx8mm-smartcross.dtb;\n"                              \
+	"smartcross_sysid;\n"                                                                                       \
+	"setenv bootargs \"${machineid_arg} console=${console} root=PARTLABEL=${part_name} ${extra_bootargs}\";\n"  \
+	"booti ${kernel_addr_r} - ${fdt_addr_r};\n"                                                                 \
+	"if test ${upgrade_available} = 1; then reset; fi;\0"                                                       \
+	"altbootcmd=" \
+	"echo \"Boot from slot ${active_slot} failed, reverting...\"\n"  \
+	"echo \"Boot from slot ${active_slot} failed, reverting...\"\n"  \
+	"if test \"x${active_slot}\" = \"xa\"; then\n"                   \
+	"  setenv active_slot b;\n"                                      \
+	"else\n"                                                         \
+	"  setenv active_slot a;\n"                                      \
+	"fi;\n"                                                          \
+	"echo \"Reverted to slot ${active_slot}\";\n"                    \
+	"setenv upgrade_available 0;\n"                                  \
+	"saveenv;\n"                                                     \
+	"reset;\0"                                                      
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
