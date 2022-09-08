@@ -80,6 +80,7 @@
 	"load mmc ${mmc_num}:${uboot_part} ${kernel_addr_r} /boot/Image;\n"                                         \
 	"load mmc ${mmc_num}:${uboot_part} ${fdt_addr} /boot/imx8mm-smartcross.dtb;\n"                              \
 	"smartcross_sysid;\n"                                                                                       \
+	"smartcross_led;\n"                                                                                         \
 	"setenv bootargs \"${machineid_arg} console=${console} root=PARTLABEL=${part_name} ${extra_bootargs}\";\n"  \
 	"booti ${kernel_addr_r} - ${fdt_addr_r};\n"                                                                 \
 	"if test ${upgrade_available} = 1; then reset; fi;\0"                                                       \
