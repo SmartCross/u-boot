@@ -8,6 +8,8 @@
 #include <asm/io.h>
 #include <i2c.h>
 #include <inttypes.h>
+#include <crypto/x509_parser.h>
+#include <linux/err.h>
 
 struct smartcross_fpctl_regs {
 	u32	id;		/* The system build id */
@@ -18,40 +20,52 @@ struct smartcross_fpctl_plat {
 	struct smartcross_fpctl_regs *regs;
 };
 
-#define ID_BYTE_LEN 16
-int read_smartcross_id(u8* id)
-{
-	struct udevice *dev;
-	int ret;
 
-	/* the first misc device will be used */
-	ret = uclass_get_device_by_name(UCLASS_MISC, "fpctl@22", &dev);
-	if (ret)
-		return ret;
-	ret = misc_read(dev, 0, id, ID_BYTE_LEN);
-	if (ret < 0)
-		return ret;
-
-	return 0;
-}
+#define FPCTL_CRYPTO_INDEX 56
+#define FPCTL_CRYPTO_DATA_BUFFER 57
+#define CRYTPO_BUFFER_CERTIFICATE 1
+#define CERT_MAX_LEN 0x400
 
 int do_smartcross_id(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
+	struct udevice *dev;
 	int ret, i;
-	u8 id[ID_BYTE_LEN];
-	char id_str[ID_BYTE_LEN * 2 + 1];
-	char cmd_str[ID_BYTE_LEN * 2 + 30];
-	ret = read_smartcross_id(id);
+	u8 buf[CERT_MAX_LEN];
+	ret = uclass_get_device_by_name(UCLASS_MISC, "fpctl@22", &dev);
 	if (ret) {
-		printf("Failed to read device ID\n");
-	} else {
-		for (i = 0; i < ID_BYTE_LEN; i++) {
-			sprintf(id_str + i * 2, "%02x", id[i]);
-		}
-		printf("Device ID: %s\n", id_str);
-		snprintf(cmd_str, sizeof(cmd_str), "systemd.machine_id=%s", id_str);
-		env_set("machineid_arg", cmd_str);
+		printf("Failed to obtain smartcross device: %d\n", ret);
+		return ret;
 	}
+	ret = misc_read(dev, 0, buf, CERT_MAX_LEN);
+	if (ret < 0) {
+		printf("Failed to read device certificate: %d\n", ret);
+		return ret;
+	}
+	int len = buf[2] * 256 + buf[3] + 4;
+	if (len > CERT_MAX_LEN) {
+		len = CERT_MAX_LEN;
+	}
+	char serial_buf[33];
+	char machine_arg_buffer[110];
+	memset(serial_buf, 0, sizeof(serial_buf));
+	memset(machine_arg_buffer, 0, sizeof(machine_arg_buffer));
+	struct x509_certificate *x509_cert = x509_cert_parse(buf, len);
+	if (!IS_ERR(x509_cert)) {
+		for (int i = 0; i < x509_cert->raw_serial_size - 1; i++) {
+			if (i < sizeof(serial_buf) / 2) {
+				sprintf(serial_buf + i * 2, "%02x", ((uint8_t*)x509_cert->raw_serial)[i + 1]);
+			}
+		}
+		printf("Certificate serial number: %s\n", serial_buf);
+		printf("Certificate subject: %s\n", x509_cert->subject);
+		snprintf(machine_arg_buffer, sizeof(machine_arg_buffer), "systemd.hostname=%s systemd.machine_id=%s", x509_cert->subject, serial_buf);
+		x509_free_certificate(x509_cert);
+	} else {
+		printf("Device certificate parse err = %d\n", PTR_ERR(x509_cert));
+		snprintf(machine_arg_buffer, sizeof(machine_arg_buffer), "systemd.hostname=unknown.smartcross.net systemd.machine_id=123456789987654321");
+	}
+	env_set("machineid_arg", machine_arg_buffer);
+
 	return 0;
 }
 
@@ -94,18 +108,19 @@ U_BOOT_CMD(
 	"smartcross_led [r g b]"
 );
 
-#define CHIP_ID_MAX_SIZE 40
 static int smartcross_fpctl_read(struct udevice *dev,
 			     int offset, void *buf, int size)
 {
 	int ret;
-	if (size > CHIP_ID_MAX_SIZE) {
-		return -EINVAL;
+	ret = dm_i2c_reg_write(dev, FPCTL_CRYPTO_INDEX, CRYTPO_BUFFER_CERTIFICATE);
+	if (ret) {
+		printf("%s i2c write crypto index failed\n", __func__);
+		return ret;
 	}
 
-	ret = dm_i2c_read(dev, 56, buf, size);
+	ret = dm_i2c_read(dev, FPCTL_CRYPTO_DATA_BUFFER, buf, size);
 	if (ret) {
-		printf("%s i2c read id failed\n", __func__);
+		printf("%s i2c read data buffer failed\n", __func__);
 		return ret;
 	}
 

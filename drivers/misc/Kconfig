@@ -512,6 +512,7 @@ config SMARTCROSS_FPCTL
 	bool "Enable SmartCross Front Panel Controller driver"
 	depends on DM_I2C
 	depends on MISC
+	select X509_CERTIFICATE_PARSER
 	help
 	  Support reading device id from FPCTL
 
