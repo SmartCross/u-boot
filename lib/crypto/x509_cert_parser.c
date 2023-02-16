@@ -127,9 +127,11 @@ struct x509_certificate *x509_cert_parse(const void *data, size_t datalen)
 	cert->pub->algo = ctx->key_algo;
 
 	/* Grab the signature bits */
+	/*
 	ret = x509_get_sig_params(cert);
 	if (ret < 0)
 		goto error_decode;
+	*/
 
 	/* Generate cert issuer + serial number key ID */
 	kid = asymmetric_key_generate_id(cert->raw_serial,
@@ -143,9 +145,11 @@ struct x509_certificate *x509_cert_parse(const void *data, size_t datalen)
 	cert->id = kid;
 
 	/* Detect self-signed certificates */
+	/*
 	ret = x509_check_for_self_signed(cert);
 	if (ret < 0)
 		goto error_decode;
+		*/
 
 	kfree(ctx);
 	return cert;
@@ -205,6 +209,7 @@ int x509_note_pkey_algo(void *context, size_t hdrlen,
 			const void *value, size_t vlen)
 {
 	struct x509_parse_context *ctx = context;
+	return 0;
 
 	pr_debug("PubKey Algo: %u\n", ctx->last_oid);
 
@@ -267,6 +272,7 @@ int x509_note_signature(void *context, size_t hdrlen,
 			const void *value, size_t vlen)
 {
 	struct x509_parse_context *ctx = context;
+	return 0;
 
 	pr_debug("Signature type: %u size %zu\n", ctx->last_oid, vlen);
 
@@ -460,6 +466,7 @@ int x509_extract_key_data(void *context, size_t hdrlen,
 			  const void *value, size_t vlen)
 {
 	struct x509_parse_context *ctx = context;
+	return 0;
 
 	ctx->key_algo = ctx->last_oid;
 	if (ctx->last_oid == OID_rsaEncryption)
