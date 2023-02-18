@@ -29,26 +29,27 @@ struct smartcross_fpctl_plat {
 int do_smartcross_id(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 {
 	struct udevice *dev;
-	int ret, i;
-	u8 buf[CERT_MAX_LEN];
+	int ret;
+	char machine_arg_buffer[110];
+	snprintf(machine_arg_buffer, sizeof(machine_arg_buffer), "systemd.hostname=sc-unknown.smartcross.net");
 	ret = uclass_get_device_by_name(UCLASS_MISC, "fpctl@22", &dev);
 	if (ret) {
-		printf("Failed to obtain smartcross device: %d\n", ret);
-		return ret;
+		pr_err("sysid: failed to obtain smartcross device: %d\n", ret);
+		goto done;
 	}
+	u8 buf[CERT_MAX_LEN];
 	ret = misc_read(dev, 0, buf, CERT_MAX_LEN);
 	if (ret < 0) {
-		printf("Failed to read device certificate: %d\n", ret);
-		return ret;
+		pr_err("sysid: failed to read device certificate: %d\n", ret);
+		goto done;
 	}
 	int len = buf[2] * 256 + buf[3] + 4;
 	if (len > CERT_MAX_LEN) {
-		len = CERT_MAX_LEN;
+		pr_err("sysid: invalid cert length: %d\n", len);
+		goto done;
 	}
 	char serial_buf[33];
-	char machine_arg_buffer[110];
 	memset(serial_buf, 0, sizeof(serial_buf));
-	memset(machine_arg_buffer, 0, sizeof(machine_arg_buffer));
 	struct x509_certificate *x509_cert = x509_cert_parse(buf, len);
 	if (!IS_ERR(x509_cert)) {
 		for (int i = 0; i < x509_cert->raw_serial_size - 1; i++) {
@@ -56,16 +57,17 @@ int do_smartcross_id(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv
 				sprintf(serial_buf + i * 2, "%02x", ((uint8_t*)x509_cert->raw_serial)[i + 1]);
 			}
 		}
-		printf("Certificate serial number: %s\n", serial_buf);
-		printf("Certificate subject: %s\n", x509_cert->subject);
+		pr_debug("sysid: certificate serial number: %s\n", serial_buf);
+		pr_debug("sysid: certificate subject: %s\n", x509_cert->subject);
 		snprintf(machine_arg_buffer, sizeof(machine_arg_buffer), "systemd.hostname=%s systemd.machine_id=%s", x509_cert->subject, serial_buf);
 		x509_free_certificate(x509_cert);
 	} else {
-		printf("Device certificate parse err = %d\n", PTR_ERR(x509_cert));
-		snprintf(machine_arg_buffer, sizeof(machine_arg_buffer), "systemd.hostname=unknown.smartcross.net systemd.machine_id=123456789987654321");
+		pr_err("sysid: certificate parse err = %ld\n", PTR_ERR(x509_cert));
+		goto done;
 	}
-	env_set("machineid_arg", machine_arg_buffer);
 
+done:
+	env_set("machineid_arg", machine_arg_buffer);
 	return 0;
 }
 
