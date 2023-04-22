@@ -1,0 +1,15 @@
+if TARGET_SMARTCROSS_SMARTCROSS
+
+config SYS_BOARD
+	default "smartcross"
+
+config SYS_VENDOR
+	default "smartcross"
+
+config SYS_CONFIG_NAME
+	default "rk3399_smartcross"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif
