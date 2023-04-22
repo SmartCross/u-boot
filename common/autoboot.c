@@ -341,7 +341,7 @@ static bool fallback_to_sha256(void)
 static int abortboot_key_sequence(int bootdelay)
 {
 	int abort;
-	uint64_t etime = endtick(bootdelay);
+	uint64_t etime = endtick(bootdelay) + usec2ticks(100000);
 
 	if (IS_ENABLED(CONFIG_AUTOBOOT_FLUSH_STDIN))
 		flush_stdin();
