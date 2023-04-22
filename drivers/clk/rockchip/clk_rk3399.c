@@ -1397,7 +1397,7 @@ static void rkclk_init(struct rockchip_cru *cru)
 static int rk3399_clk_probe(struct udevice *dev)
 {
 	struct rk3399_clk_priv *priv = dev_get_priv(dev);
-	bool init_clocks = false;
+	bool init_clocks = true;
 
 #if CONFIG_IS_ENABLED(OF_PLATDATA)
 	struct rk3399_clk_plat *plat = dev_get_plat(dev);
