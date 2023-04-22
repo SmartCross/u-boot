@@ -659,4 +659,12 @@ config SL28CPLD
 	  the base driver which provides common access methods for the
 	  sub-drivers.
 
+config SMARTCROSS_FPCTL
+	bool "Enable SmartCross Front Panel Controller driver"
+	depends on DM_I2C
+	depends on MISC
+	select X509_CERTIFICATE_PARSER
+	help
+	  Support for the front panel controller of SmartCross
+
 endmenu

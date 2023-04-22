@@ -29,3 +29,12 @@
 &uart2 {
 	status = "okay";
 };
+
+&i2c2 {
+	status = "okay";
+
+	frontpanel: fpctl@22 {
+		reg = <0x22>;
+		compatible = "smartcross,fpctl-v1";
+	};
+};
