@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2016 Fuzhou Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+#include <dt-bindings/usb/pd.h>
+#include <dt-bindings/pwm/pwm.h>
+#include "rk3399-smartcross-tiny.dtsi"
+
+/ {
+	model = "SmartCross Signal Processor Board";
+	compatible = "smartcross,signal-processor", "rockchip,rk3399";
+
+	aliases {
+		mmc1 = &sdmmc;
+	};
+};
+
+&sdmmc {
+	bus-width = <4>;
+	cap-sd-highspeed;
+	cap-mmc-highspeed;
+	disable-wp;
+	disable-cd;
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+};

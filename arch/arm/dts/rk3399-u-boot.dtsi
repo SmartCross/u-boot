@@ -8,10 +8,7 @@
 
 / {
 	aliases {
-		mmc0 = &sdhci;
 		mmc1 = &sdmmc;
-		pci0 = &pcie0;
-		spi1 = &spi1;
 	};
 
 	cic: syscon@ff620000 {
@@ -39,7 +36,6 @@
 		u-boot,dm-pre-reloc;
 		compatible = "rockchip,rk3399-dmc";
 		devfreq-events = <&dfi>;
-		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH 0>;
 		clocks = <&cru SCLK_DDRCLK>;
 		clock-names = "dmc_clk";
 		reg = <0x0 0xffa80000 0x0 0x0800
@@ -89,10 +85,6 @@
 	u-boot,dm-pre-reloc;
 };
 
-&emmc_phy {
-	u-boot,dm-pre-reloc;
-};
-
 &grf {
 	u-boot,dm-pre-reloc;
 };
@@ -117,11 +109,6 @@
 	u-boot,dm-pre-reloc;
 };
 
-&sdhci {
-	max-frequency = <200000000>;
-	u-boot,dm-pre-reloc;
-};
-
 &sdmmc {
 	u-boot,dm-pre-reloc;
 
@@ -129,22 +116,6 @@
 	u-boot,spl-fifo-mode;
 };
 
-&spi1 {
-	u-boot,dm-pre-reloc;
-};
-
-&uart0 {
-	u-boot,dm-pre-reloc;
-};
-
 &uart2 {
-	u-boot,dm-pre-reloc;
-};
-
-&vopb {
-	u-boot,dm-pre-reloc;
-};
-
-&vopl {
 	u-boot,dm-pre-reloc;
 };

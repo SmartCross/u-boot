@@ -1,0 +1,215 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2016 Fuzhou Rockchip Electronics Co., Ltd
+ */
+
+#include <dt-bindings/clock/rk3399-cru.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include <dt-bindings/power/rk3399-power.h>
+#include <dt-bindings/thermal/thermal.h>
+
+/ {
+	compatible = "rockchip,rk3399";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		i2c2 = &i2c2;
+		serial2 = &uart2;
+	};
+
+	psci {
+		compatible = "arm,psci-1.0";
+		method = "smc";
+	};
+
+	sdmmc: mmc@fe320000 {
+		compatible = "rockchip,rk3399-dw-mshc",
+			     "rockchip,rk3288-dw-mshc";
+		reg = <0x0 0xfe320000 0x0 0x4000>;
+		max-frequency = <150000000>;
+		assigned-clocks = <&cru HCLK_SD>;
+		assigned-clock-rates = <200000000>;
+		clocks = <&cru HCLK_SDMMC>, <&cru SCLK_SDMMC>,
+			 <&cru SCLK_SDMMC_DRV>, <&cru SCLK_SDMMC_SAMPLE>;
+		clock-names = "biu", "ciu", "ciu-drive", "ciu-sample";
+		fifo-depth = <0x100>;
+		power-domains = <&power RK3399_PD_SD>;
+		resets = <&cru SRST_SDMMC>;
+		reset-names = "reset";
+		status = "okay";
+	};
+
+	i2c2: i2c@ff120000 {
+		compatible = "rockchip,rk3399-i2c";
+		reg = <0x0 0xff120000 0x0 0x1000>;
+		assigned-clocks = <&cru SCLK_I2C2>;
+		assigned-clock-rates = <200000000>;
+		clocks = <&cru SCLK_I2C2>, <&cru PCLK_I2C2>;
+		clock-names = "i2c", "pclk";
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c2_xfer>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+
+	uart2: serial@ff1a0000 {
+		compatible = "rockchip,rk3399-uart", "snps,dw-apb-uart";
+		reg = <0x0 0xff1a0000 0x0 0x100>;
+		clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
+		clock-names = "baudclk", "apb_pclk";
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2c_xfer>;
+		status = "disabled";
+	};
+
+	pmu: power-management@ff310000 {
+		compatible = "rockchip,rk3399-pmu", "syscon", "simple-mfd";
+		reg = <0x0 0xff310000 0x0 0x1000>;
+
+		/*
+		 * Note: RK3399 supports 6 voltage domains including VD_CORE_L,
+		 * VD_CORE_B, VD_CENTER, VD_GPU, VD_LOGIC and VD_PMU.
+		 * Some of the power domains are grouped together for every
+		 * voltage domain.
+		 * The detail contents as below.
+		 */
+		power: power-controller {
+			compatible = "rockchip,rk3399-power-controller";
+			#power-domain-cells = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+	};
+
+	pmugrf: syscon@ff320000 {
+		compatible = "rockchip,rk3399-pmugrf", "syscon", "simple-mfd";
+		reg = <0x0 0xff320000 0x0 0x1000>;
+
+		pmu_io_domains: io-domains {
+			compatible = "rockchip,rk3399-pmu-io-voltage-domain";
+			status = "disabled";
+		};
+	};
+
+	pmucru: pmu-clock-controller@ff750000 {
+		compatible = "rockchip,rk3399-pmucru";
+		reg = <0x0 0xff750000 0x0 0x1000>;
+		rockchip,grf = <&pmugrf>;
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		assigned-clocks = <&pmucru PLL_PPLL>;
+		assigned-clock-rates = <676000000>;
+	};
+
+	cru: clock-controller@ff760000 {
+		compatible = "rockchip,rk3399-cru";
+		reg = <0x0 0xff760000 0x0 0x1000>;
+		rockchip,grf = <&grf>;
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		assigned-clocks =
+			<&cru PLL_GPLL>, <&cru PLL_CPLL>,
+			<&cru PLL_NPLL>,
+			<&cru ACLK_PERIHP>, <&cru HCLK_PERIHP>,
+			<&cru PCLK_PERIHP>,
+			<&cru ACLK_PERILP0>, <&cru HCLK_PERILP0>,
+			<&cru PCLK_PERILP0>, <&cru ACLK_CCI>,
+			<&cru HCLK_PERILP1>, <&cru PCLK_PERILP1>,
+			<&cru ACLK_VIO>, <&cru ACLK_HDCP>,
+			<&cru ACLK_GIC_PRE>,
+			<&cru PCLK_DDR>;
+		assigned-clock-rates =
+			 <594000000>,  <800000000>,
+			<1000000000>,
+			 <150000000>,   <75000000>,
+			  <37500000>,
+			 <100000000>,  <100000000>,
+			  <50000000>, <600000000>,
+			 <100000000>,   <50000000>,
+			 <400000000>, <400000000>,
+			 <200000000>,
+			 <200000000>;
+	};
+
+	grf: syscon@ff770000 {
+		compatible = "rockchip,rk3399-grf", "syscon", "simple-mfd";
+		reg = <0x0 0xff770000 0x0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		io_domains: io-domains {
+			compatible = "rockchip,rk3399-io-voltage-domain";
+			status = "disabled";
+		};
+	};
+
+	watchdog@ff848000 {
+		compatible = "rockchip,rk3399-wdt", "snps,dw-wdt";
+		reg = <0x0 0xff848000 0x0 0x100>;
+		clocks = <&cru PCLK_WDT>;
+	};
+
+	rktimer: rktimer@ff850000 {
+		compatible = "rockchip,rk3399-timer";
+		reg = <0x0 0xff850000 0x0 0x1000>;
+		clocks = <&cru PCLK_TIMER0>, <&cru SCLK_TIMER00>;
+		clock-names = "pclk", "timer";
+	};
+
+	pinctrl: pinctrl {
+		compatible = "rockchip,rk3399-pinctrl";
+		rockchip,grf = <&grf>;
+		rockchip,pmu = <&pmugrf>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		pcfg_pull_up: pcfg-pull-up {
+			bias-pull-up;
+		};
+
+		pcfg_pull_down: pcfg-pull-down {
+			bias-pull-down;
+		};
+
+		pcfg_pull_none: pcfg-pull-none {
+			bias-disable;
+		};
+
+		pcfg_pull_none_12ma: pcfg-pull-none-12ma {
+			bias-disable;
+			drive-strength = <12>;
+		};
+
+		clock {
+			clk_32k: clk-32k {
+				rockchip,pins = <0 RK_PA0 2 &pcfg_pull_none>;
+			};
+		};
+
+		i2c2 {
+			i2c2_xfer: i2c2-xfer {
+				rockchip,pins =
+					<2 RK_PA1 2 &pcfg_pull_none_12ma>,
+					<2 RK_PA0 2 &pcfg_pull_none_12ma>;
+			};
+		};
+
+		uart2c {
+			uart2c_xfer: uart2c-xfer {
+				rockchip,pins =
+					<4 RK_PC3 1 &pcfg_pull_up>,
+					<4 RK_PC4 1 &pcfg_pull_none>;
+			};
+		};
+
+	};
+};

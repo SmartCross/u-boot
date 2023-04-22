@@ -237,13 +237,10 @@ config ROCKCHIP_RK3399
 	select SPL_SERIAL if SPL
 	select SPL_DRIVERS_MISC if SPL
 	select CLK
-	select FIT
 	select PINCTRL
 	select RAM
 	select REGMAP
 	select SYSCON
-	select DM_PMIC
-	select DM_REGULATOR_FIXED
 	select BOARD_LATE_INIT
 	imply PARTITION_TYPE_GUID
 	imply PRE_CONSOLE_BUFFER

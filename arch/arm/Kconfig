@@ -1936,17 +1936,11 @@ config ARCH_ROCKCHIP
 	select BLK
 	select BINMAN if SPL_OPTEE || SPL
 	select DM
-	select DM_GPIO
 	select DM_I2C
 	select DM_MMC
-	select DM_PWM
-	select DM_REGULATOR
 	select DM_SERIAL
-	select DM_SPI
-	select DM_SPI_FLASH
 	select ENABLE_ARM_SOC_BOOT0_HOOK
 	select OF_CONTROL
-	select SPI
 	select SPL_DM if SPL
 	select SPL_DM_SPI if SPL
 	select SPL_DM_SPI_FLASH if SPL
