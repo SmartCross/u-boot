@@ -224,19 +224,18 @@ config ROCKCHIP_RK3399
 	select ARM64
 	select SUPPORT_SPL
 	select SUPPORT_TPL
-	select SPL
-	select SPL_ATF
+	select SPL_ATF if SPL
 	select SPL_BOARD_INIT if SPL
-	select SPL_LOAD_FIT
+	select SPL_LOAD_FIT if SPL
 	select SPL_CLK if SPL
 	select SPL_PINCTRL if SPL
 	select SPL_RAM if SPL
 	select SPL_REGMAP if SPL
 	select SPL_SYSCON if SPL
 	select TPL_NEEDS_SEPARATE_STACK if TPL
-	select SPL_SEPARATE_BSS
-	select SPL_SERIAL
-	select SPL_DRIVERS_MISC
+	select SPL_SEPARATE_BSS if SPL
+	select SPL_SERIAL if SPL
+	select SPL_DRIVERS_MISC if SPL
 	select CLK
 	select FIT
 	select PINCTRL
