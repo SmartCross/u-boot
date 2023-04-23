@@ -9,7 +9,7 @@
 	"stderr=serial\0"              \
     "upgrade_available=0\0"        \
     "active_slot=a\0"              \
-    "extra_bootargs=btusb.enable_autosuspend=n\0"                                                               \
+    "extra_bootargs=btusb.enable_autosuspend=n rootwait\0"                                                               \
     "bsp_bootcmd="                                                                                              \
     "setenv mmc_num 1;\n"                                                                                       \
     "setenv part_name rootfs-${active_slot};\n"                                                                 \
