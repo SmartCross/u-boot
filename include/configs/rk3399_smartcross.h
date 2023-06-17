@@ -19,6 +19,7 @@
     "load mmc ${mmc_num}:${uboot_part} ${fdt_addr_r} /boot/rk3399-smartcross.dtb;\n"                            \
     "smartcross_sysid;\n"                                                                                       \
     "setenv bootargs \"${machineid_arg} root=PARTLABEL=${part_name} ${extra_bootargs}\";\n"                     \
+    "saveenv;\n"                                                                                                \
     "booti ${kernel_addr_r} - ${fdt_addr_r};\n"                                                                 \
     "if test ${upgrade_available} = 1; then reset; fi;\0"                                                       \
     "altbootcmd="                                                                                               \
