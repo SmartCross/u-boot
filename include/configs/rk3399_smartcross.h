@@ -15,7 +15,7 @@
     "setenv part_name rootfs-${active_slot};\n"                                                                 \
     "part number mmc ${mmc_num} ${part_name} uboot_part;\n"                                                     \
     "echo \"Booting from slot ${active_slot} (part ${uboot_part}) attempt ${bootcount}/${bootlimit}...\";\n"    \
-    "load mmc ${mmc_num}:${uboot_part} ${kernel_addr_r} /boot/Image;\n"                                         \
+    "load mmc ${mmc_num}:${uboot_part} ${kernel_addr_r} /boot/Image.gz;\n"                                      \
     "load mmc ${mmc_num}:${uboot_part} ${fdt_addr_r} /boot/rk3399-smartcross.dtb;\n"                            \
     "smartcross_sysid;\n"                                                                                       \
     "setenv bootargs \"${machineid_arg} root=PARTLABEL=${part_name} ${extra_bootargs}\";\n"                     \
