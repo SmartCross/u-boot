@@ -1,0 +1,31 @@
+name: Build U-Boot Image
+
+on:
+  push:
+    branches:
+      - sc-rk3399-mainline
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install aarch64 toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+
+    - name: Apply defconfig
+      run: make CROSS_COMPILE=aarch64-linux-gnu- smartcross_defconfig
+
+    - name: Build U-Boot image
+      run: make CROSS_COMPILE=aarch64-linux-gnu-
+
+    - name: Upload U-Boot image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: u-boot-dtb
+        path: u-boot-dtb.bin
