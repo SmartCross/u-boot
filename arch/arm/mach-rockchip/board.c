@@ -187,10 +187,14 @@ int board_late_init(void)
 	return rk_board_late_init();
 }
 
+__weak void smartcross_rk808_sdmmc_reset(void) { }
+
 int board_init(void)
 {
 	int ret;
 
+
+	smartcross_rk808_sdmmc_reset();
 #ifdef CONFIG_DM_REGULATOR
 	ret = regulators_enable_boot_on(false);
 	if (ret)
