@@ -38,3 +38,7 @@
 		compatible = "smartcross,fpctl-v1";
 	};
 };
+
+&i2c8 {
+	status = "okay";
+};

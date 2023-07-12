@@ -19,6 +19,7 @@
 
 	aliases {
 		i2c2 = &i2c2;
+		i2c8 = &i2c8;
 		serial2 = &uart2;
 	};
 
@@ -57,6 +58,21 @@
 		#size-cells = <0>;
 		status = "disabled";
 	};
+
+        i2c8: i2c@ff3e0000 {
+                compatible = "rockchip,rk3399-i2c";
+                reg = <0x0 0xff3e0000 0x0 0x1000>;
+                assigned-clocks = <&pmucru SCLK_I2C8_PMU>;
+                assigned-clock-rates = <200000000>;
+                clocks = <&pmucru SCLK_I2C8_PMU>, <&pmucru PCLK_I2C8_PMU>;
+                clock-names = "i2c", "pclk";
+                interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&i2c8_xfer>;
+                #address-cells = <1>;
+                #size-cells = <0>;
+                status = "disabled";
+        };
 
 	uart2: serial@ff1a0000 {
 		compatible = "rockchip,rk3399-uart", "snps,dw-apb-uart";
@@ -202,6 +218,14 @@
 					<2 RK_PA0 2 &pcfg_pull_none_12ma>;
 			};
 		};
+
+                i2c8 {
+                        i2c8_xfer: i2c8-xfer {
+                                rockchip,pins =
+                                        <1 RK_PC5 1 &pcfg_pull_none>,
+                                        <1 RK_PC4 1 &pcfg_pull_none>;
+                        };
+                };
 
 		uart2c {
 			uart2c_xfer: uart2c-xfer {
